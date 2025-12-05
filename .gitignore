@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# Data 
+data/bronze/
+data/silver/
+data/gold/
+
+# Airflow
+airflow/logs/
+airflow/__pycache__/
+
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
+# VS Code
+.vscode/
