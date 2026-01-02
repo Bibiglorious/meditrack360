@@ -1,0 +1,97 @@
+
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    restart: always
+
+  airflow-webserver:
+    image: apache/airflow:2.9.0
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      MEDITRACK_HOST_ROOT: "/Users/ebereglorious/Downloads/MediTrack_360"
+      PYTHONPATH: "/opt/airflow"
+      _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-docker pyarrow fastparquet"
+    volumes:
+      - ../airflow/dags:/opt/airflow/dags
+      - ../airflow/logs:/opt/airflow/logs
+      - ../airflow/plugins:/opt/airflow/plugins
+      - ../data:/opt/airflow/data 
+      - ../scripts:/opt/airflow/scripts
+      - /var/run/docker.sock:/var/run/docker.sock         
+    ports:
+      - "8080:8080"
+    command: webserver
+    restart: always
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.0
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      MEDITRACK_HOST_ROOT: "/Users/ebereglorious/Downloads/MediTrack_360"
+      PYTHONPATH: "/opt/airflow"
+      _PIP_ADDITIONAL_REQUIREMENTS: "apache-airflow-providers-docker pyarrow fastparquet"
+    volumes:
+      - ../airflow/dags:/opt/airflow/dags
+      - ../airflow/logs:/opt/airflow/logs
+      - ../airflow/plugins:/opt/airflow/plugins
+      - ../data:/opt/airflow/data
+      - ../scripts:/opt/airflow/scripts
+      - /var/run/docker.sock:/var/run/docker.sock        
+    command: scheduler
+    restart: always
+    
+
+  spark-master:
+    image: spark:3.5.1-scala2.12-java11-python3-ubuntu
+    container_name: spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --host spark-master
+    ports:
+      - "7077:7077"
+      - "8081:8080"
+    volumes:
+      - ../scripts:/opt/spark/scripts
+      - ../data:/opt/spark/data
+    restart: always
+
+
+  spark-worker:
+    image: spark:3.5.1-scala2.12-java11-python3-ubuntu
+    container_name: spark-worker
+    depends_on:
+      - spark-master
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
+    ports:
+      - "8082:8080"   
+    volumes:
+      - ../scripts:/opt/spark/scripts
+      - ../data:/opt/spark/data
+    restart: always
+
+  
+  great-expectations:
+    build:
+      context: ../docker/great_expectations
+      dockerfile: Dockerfile
+    container_name: great-expectations
+    volumes:
+      - ../great_expectations:/gx
+      - ../data:/data
+      - ../scripts:/scripts
+    restart: always
+
+volumes:
+  postgres-db-volume:
+  
