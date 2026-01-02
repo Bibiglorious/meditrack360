@@ -15,6 +15,7 @@ data/gold/
 # Airflow
 airflow/logs/
 airflow/__pycache__/
+*.log
 
 # Terraform
 .terraform/
