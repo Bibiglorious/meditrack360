@@ -11,7 +11,7 @@ default_args = {
 with DAG(
     dag_id='load_gold_to_redshift',
     default_args=default_args,
-    schedule_interval='@daily'
+    schedule_interval='@daily',
     catchup=False,
     tags=['redshift', 'etl', 'gold']
 ) as dag:
