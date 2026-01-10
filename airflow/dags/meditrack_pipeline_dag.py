@@ -134,9 +134,9 @@ with DAG(
 
         run_spark_silver >> silver_to_s3
 
-    # -----------------------------
+    
+
     # Data Quality (Great Expectations container)
-    # -----------------------------
     with TaskGroup("data_quality", tooltip="Great Expectations checks on Silver") as tg_dq:
         ge_validate_silver = DockerOperator(
             task_id="validate_silver_with_gx",
@@ -148,9 +148,9 @@ with DAG(
             auto_remove=True,
         )
 
-    # -----------------------------
-    # Gold (placeholder for now)
-    # -----------------------------
+    
+    
+    # Gold 
     with TaskGroup("gold", tooltip="Gold marts (facts/dims) - placeholder") as tg_gold:
         build_gold = PythonOperator(
             task_id="gold_placeholder",
